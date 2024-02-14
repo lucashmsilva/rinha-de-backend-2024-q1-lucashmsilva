@@ -1,0 +1,19 @@
+{
+  "name": "rinha-de-backend-2024-q1-lucashmsilva",
+  "version": "1.0.0",
+  "description": "Implementação em Node.js, PostgreSQL e Nginx para a Rinha de Backend 2024q1",
+  "scripts": {
+    "start": "node ./src/app.js",
+    "start-dev": "npx nodemon app.js"
+  },
+  "author": "lucashmsilva",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "postgres": "^3.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
+  }
+}
