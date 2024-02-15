@@ -1,5 +1,9 @@
 module.exports = {
   run: async (sql, { clientId }) => {
+    if (!Number.isInteger(clientId)) {
+      throw new Error('invalid_client_id');
+    }
+
     const clientQuery = sql`
       SELECT c.limite, s.valor AS total, NOW() AS data_extrato
       FROM clientes c
@@ -18,7 +22,7 @@ module.exports = {
 
     const [[client,], trasactions] = await Promise.all([clientQuery, transactionsQuery]);
 
-    if(!client) {
+    if (!client) {
       throw new Error('client_not_found');
     }
 
