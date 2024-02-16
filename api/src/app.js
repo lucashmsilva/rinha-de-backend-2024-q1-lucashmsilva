@@ -39,7 +39,7 @@ function setupApp(sql) {
       const clientId = +req.params.id;
       const { valor, tipo, descricao } = req.body;
 
-      const response = await createTransacao.run(sql, { clientId, valor, tipo, descricao })
+      const response = await createTransacao.run(sql, { clientId, valor, tipo, descricao });
 
       return res.status(200).json(response);
     } catch (err) {
@@ -51,7 +51,7 @@ function setupApp(sql) {
         return res.status(422).end();
       }
 
-      return res.status(422).json(err).end();
+      return res.status(422).end();
     }
   });
 
@@ -67,7 +67,7 @@ function setupApp(sql) {
         return res.status(404).end();
       }
 
-      return res.status(500).json(err).end();
+      return res.status(500).end();
     }
   });
 
