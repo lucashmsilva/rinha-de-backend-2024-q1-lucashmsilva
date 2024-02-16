@@ -20,7 +20,7 @@ module.exports = {
       LIMIT 10;
     `;
 
-    const [[client,], trasactions] = await Promise.all([clientQuery, transactionsQuery]);
+    const [[client], trasactions] = await Promise.all([clientQuery, transactionsQuery]);
 
     if (!client) {
       throw new Error('client_not_found');
@@ -31,4 +31,4 @@ module.exports = {
       ultimas_transacoes: trasactions
     };
   }
-}
+};
