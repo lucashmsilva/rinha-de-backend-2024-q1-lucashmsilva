@@ -9,3 +9,6 @@
 - Cache?
 - Validar keepalive?
 - Remover retorno de JSON dos caso de erro
+- Node clusters
+- Remover body (retornar head)
+- body parser?
