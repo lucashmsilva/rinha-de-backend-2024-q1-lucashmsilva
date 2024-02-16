@@ -5,5 +5,7 @@
     - redis
     - controle de versão
     - por conflito
+    - usando um arquivo
 - Cache?
 - Validar keepalive?
+- Remover retorno de JSON dos caso de erro
