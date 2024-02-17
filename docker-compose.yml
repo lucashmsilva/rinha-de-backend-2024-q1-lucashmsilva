@@ -1,11 +1,11 @@
-version: "3.8"
+version: '3.8'
 
 services:
   api01: &api
-    build:
-      context: ./api
+    build: .
     hostname: api01
     environment:
+      - WATCH=${WATCH}
       - DB_HOSTNAME=db
       - DB_PASSWORD=123
       - DB_USER=admin
@@ -13,23 +13,21 @@ services:
       - DB_INITIAL_POOL_SIZE=13
       - DB_MAX_POOL_SIZE=13
       - PORT=3000
-    volumes:
-      - "./api:/application"
     ports:
-      - "3001:3000"
+      - '3001:3000'
     depends_on:
       - db
     deploy:
       resources:
         limits:
-          cpus: "0.55"
-          memory: "200MB"
+          cpus: '0.55'
+          memory: '200MB'
 
   api02:
     <<: *api
     hostname: api02
     ports:
-      - "3002:3000"
+      - '3002:3000'
 
   nginx:
     image: nginx:latest
@@ -39,12 +37,12 @@ services:
       - api01
       - api02
     ports:
-      - "9999:9999"
+      - '9999:9999'
     deploy:
       resources:
         limits:
-          cpus: "0.15"
-          memory: "10MB"
+          cpus: '0.15'
+          memory: '10MB'
 
   db:
     image: postgres:latest
@@ -54,15 +52,15 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_DB=rinha
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     command: postgres -c checkpoint_timeout=600 -c max_wal_size=4096 -c synchronous_commit=0 -c full_page_writes=0
     deploy:
       resources:
         limits:
-          cpus: "0.25"
-          memory: "140MB"
+          cpus: '0.25'
+          memory: '140MB'
 
 networks:
   default:

@@ -1,10 +1,9 @@
-# Rinha de backend 2024-Q1
+# API Crébito Node.js
 
 <br />
 <div align="center">
-    <img style="border-radius: 50%" src="assets/rinha.jfif" alt="Logo" width="300">
+    <img src="assets/rinha.jfif" alt="Logo" width="600">
     <br/>
-    <h4>API Crébito Node.js</h4>
 </div>
 
 ## Tecnologias
