@@ -1,10 +1,10 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const { createServer } = require('node:http');
 const postgres = require('postgres');
 
 const getExtrato = require('./extrato-get');
 const createTransacao = require('./trasacoes-create');
 
+let sql;
 async function setupDbConnection() {
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
@@ -12,7 +12,7 @@ async function setupDbConnection() {
   const dbMaxPoolSize = process.env.DB_MAX_POOL_SIZE;
   const dbInitialPoolSize = process.env.DB_INITIAL_POOL_SIZE;
 
-  const sql = postgres({
+  sql = postgres({
     host: 'db',
     port: 5432,
     database: dbName,
@@ -26,59 +26,61 @@ async function setupDbConnection() {
     poolWarmup.push(sql`SELECT 1+1`);
   }
   await Promise.all([poolWarmup]);
-
-  return sql;
 }
 
-function setupApp(sql) {
-  const app = express();
-  app.use(bodyParser.json());
+async function handleRequest(req, res) {
+  const { method, url } = req;
 
-  app.post('/clientes/:id/transacoes', async (req, res) => {
+  const urlString = url.split('/');
+  const clientId = +urlString[2];
+  const pathname = urlString[3];
+
+  if (clientId > 5) {
+    return res.writeHead(404).end();
+  }
+
+  if (method === 'POST' && pathname === 'transacoes') {
     try {
-      const clientId = +req.params.id;
-      const { valor, tipo, descricao } = req.body;
+      let body = '';
+      for await (const chunk of req) body += chunk;
 
-      const response = await createTransacao.run(sql, { clientId, valor, tipo, descricao });
-
-      return res.status(200).json(response);
+      const { valor, tipo, descricao } = JSON.parse(body);
+      const response = await createTransacao.run(sql, { clientId, valor: +valor, tipo, descricao });
+      return res.writeHead(200, { 'Content-type': 'application/json' }).end(JSON.stringify(response))
     } catch (err) {
       if (err.message === 'client_not_found') {
-        return res.status(404).end();
+        return res.writeHead(404).end();
       }
 
       if (err.message === 'insufficient_limit') {
-        return res.status(422).end();
+        return res.writeHead(422).end();
       }
 
-      return res.status(422).end();
+      return res.writeHead(422).end();
     }
-  });
+  }
 
-  app.get('/clientes/:id/extrato', async (req, res) => {
+  if (method === 'GET' && pathname === 'extrato') {
     try {
-      const clientId = +req.params.id;
-
       const response = await getExtrato.run(sql, { clientId });
-
-      return res.json(response).status(200).end();
+      return res.writeHead(200, { 'Content-type': 'application/json' }).end(JSON.stringify(response))
     } catch (err) {
       if (err.message === 'client_not_found') {
-        return res.status(404).end();
+        return res.writeHead(404).end();
       }
 
-      return res.status(500).end();
+      return res.writeHead(500).end();
     }
-  });
+  }
 
-  return app;
+  return res.writeHead(404).end();
 }
 
 async function init() {
   const port = process.env.PORT;
 
-  const dbConnection = await setupDbConnection();
-  const server = setupApp(dbConnection);
+  await setupDbConnection();
+  const server = createServer(handleRequest);
 
   server.listen(port, () => {
     console.log(`Server started on port ${port}`);
