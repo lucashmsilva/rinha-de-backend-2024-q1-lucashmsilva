@@ -9,8 +9,6 @@
   "author": "lucashmsilva",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.20.2",
-    "express": "^4.18.2",
     "postgres": "^3.4.3"
   },
   "devDependencies": {
