@@ -6,6 +6,7 @@ const createTransacao = require('./transacoes-create');
 
 let sql;
 async function setupDbConnection() {
+  const dbHost = process.env.DB_HOSTNAME;
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
   const dbName = process.env.DB_NAME;
@@ -13,7 +14,7 @@ async function setupDbConnection() {
   const dbInitialPoolSize = process.env.DB_INITIAL_POOL_SIZE;
 
   sql = postgres({
-    host: 'db',
+    host: dbHost,
     port: 5432,
     database: dbName,
     username: dbUser,
