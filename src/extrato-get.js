@@ -3,7 +3,11 @@ const limites = [100000, 80000, 1000000, 10000000, 500000];
 module.exports = {
   run: async (sql, { clientId }) => {
     if (!Number.isInteger(clientId)) {
-      throw new Error('invalid_client_id');
+      return [422, null];
+    }
+
+    if (clientId > 5) {
+      return [404, null];
     }
 
     const transactions = await sql`
@@ -15,17 +19,17 @@ module.exports = {
     `;
 
     if (!transactions?.length) {
-      return {
+      return [200, {
         saldo: {
           total: 0,
           data_extrato: new Date(),
           limite: limites[clientId - 1],
         },
         ultimas_transacoes: []
-      }
+      }];
     }
 
-    return {
+    return [200, {
       saldo: {
         total: transactions[0].saldo_atual,
         data_extrato: new Date(),
@@ -39,6 +43,6 @@ module.exports = {
           realizada_em: transaction.realizada_em
         }
       })
-    };
+    }];
   }
 };

@@ -3,23 +3,23 @@ const limites = [100000, 80000, 1000000, 10000000, 500000];
 module.exports = {
   run: async function (sql, { clientId, valor, tipo, descricao }) {
     if (!Number.isInteger(clientId)) {
-      throw new Error('invalid_client_id');
+      return [422, null];
     }
 
     if (!Number.isInteger(valor) || valor < 0) {
-      throw new Error('invalid_transaction_value');
+      return [422, null];
     }
 
     if (!['c', 'd'].includes(tipo)) {
-      throw new Error('invalid_transaction_type');
+      return [422, null];
     }
 
     if (!descricao || descricao === '' || descricao.length > 10) {
-      throw new Error('invalid_description');
+      return [422, null];
     }
 
     if (clientId > 5) {
-      throw new Error('client_not_found');
+      return [404, null];
     }
 
     const [response] = await sql`
@@ -32,12 +32,12 @@ module.exports = {
         RETURNING saldo_atual;`;
 
     if (!response) {
-      throw new Error('insufficient_limit');
+      return [422, null];
     }
 
-    return {
+    return [200, {
       limite: limites[clientId - 1],
       saldo: response.saldo_atual
-    }
+    }];
   }
 };

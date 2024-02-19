@@ -40,37 +40,19 @@ async function handleRequest(req, res) {
   }
 
   if (method === 'POST' && pathname === 'transacoes') {
-    try {
-      let body = '';
-      for await (const chunk of req) body += chunk;
+    let body = '';
+    for await (const chunk of req) body += chunk;
 
-      const { valor, tipo, descricao } = JSON.parse(body);
-      const response = await createTransacao.run(sql, { clientId, valor: +valor, tipo, descricao });
-      return res.writeHead(200, { 'Content-type': 'application/json' }).end(JSON.stringify(response))
-    } catch (err) {
-      if (err.message === 'client_not_found') {
-        return res.writeHead(404).end();
-      }
+    const { valor, tipo, descricao } = JSON.parse(body);
+    const [statusCode, payload] = await createTransacao.run(sql, { clientId, valor: +valor, tipo, descricao });
 
-      if (err.message === 'insufficient_limit') {
-        return res.writeHead(422).end();
-      }
-
-      return res.writeHead(422).end();
-    }
+    return res.writeHead(statusCode, { 'Content-type': 'application/json' }).end(payload ? JSON.stringify(payload) : null);
   }
 
   if (method === 'GET' && pathname === 'extrato') {
-    try {
-      const response = await getExtrato.run(sql, { clientId });
-      return res.writeHead(200, { 'Content-type': 'application/json' }).end(JSON.stringify(response))
-    } catch (err) {
-      if (err.message === 'client_not_found') {
-        return res.writeHead(404).end();
-      }
+    const [statusCode, payload] = await getExtrato.run(sql, { clientId });
 
-      return res.writeHead(500).end();
-    }
+    return res.writeHead(statusCode, { 'Content-type': 'application/json' }).end(payload ? JSON.stringify(payload) : null);
   }
 
   return res.writeHead(404).end();
