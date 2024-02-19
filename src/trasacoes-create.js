@@ -1,23 +1,28 @@
 module.exports = {
   run: async function (sql, { clientId, valor, tipo, descricao }) {
     if (!Number.isInteger(clientId)) {
-      throw new Error('invalid_client_id');
+      // invalid client id type
+      return [422, null];
     }
 
     if (!Number.isInteger(valor) || valor < 0) {
-      throw new Error('invalid_transaction_value');
+      // invalid value for transaction
+      return [422, null];
     }
 
     if (!['c', 'd'].includes(tipo)) {
-      throw new Error('invalid_transaction_type');
+      // invalid transaction type
+      return [422, null];
     }
 
     if (!descricao || descricao === '' || descricao.length > 10) {
-      throw new Error('invalid_description');
+      // invlaid description
+      return [422, null];
     }
 
     if (clientId > 5) {
-      throw new Error('client_not_found');
+      // client not found
+      return [404, null];
     }
 
     const [updateResponse] = await sql`
@@ -39,9 +44,10 @@ module.exports = {
     `;
 
     if (!updateResponse) {
-      throw new Error('insufficient_limit');
+      // insufficient limit to complete transaction
+      return [422, null];
     }
 
-    return updateResponse;
+    return [200, updateResponse];
   }
 };

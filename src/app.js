@@ -35,36 +35,28 @@ function setupApp(sql) {
   app.use(bodyParser.json());
 
   app.post('/clientes/:id/transacoes', async (req, res) => {
-    try {
-      const clientId = +req.params.id;
-      const { valor, tipo, descricao } = req.body;
+    const clientId = +req.params.id;
+    const { valor, tipo, descricao } = req.body;
 
-      const response = await createTransacao.run(sql, { clientId, valor, tipo, descricao });
+    const [statusCode, payload] = await createTransacao.run(sql, CLIENTS_DATA, { clientId, valor, tipo, descricao });
 
-      return res.status(200).json(response);
-    } catch (err) {
-      if (err.message === 'client_not_found') {
-        return res.status(404).end();
-      }
-
-      return res.status(422).end();
+    if (payload) {
+      return res.status(statusCode).json(payload);
     }
+
+    return res.status(statusCode).end();
   });
 
   app.get('/clientes/:id/extrato', async (req, res) => {
-    try {
-      const clientId = +req.params.id;
+    const clientId = +req.params.id;
 
-      const response = await getExtrato.run(sql, { clientId });
+    const [statusCode, payload] = await getExtrato.run(sql, CLIENTS_DATA, { clientId });
 
-      return res.json(response).status(200).end();
-    } catch (err) {
-      if (err.message === 'client_not_found') {
-        return res.status(404).end();
-      }
-
-      return res.status(500).end();
+    if (payload) {
+      return res.status(statusCode).json(payload);
     }
+
+    return res.status(statusCode).end();
   });
 
   return app;
