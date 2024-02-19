@@ -47,10 +47,6 @@ function setupApp(sql) {
         return res.status(404).end();
       }
 
-      if (err.message === 'insufficient_limit') {
-        return res.status(422).end();
-      }
-
       return res.status(422).end();
     }
   });
