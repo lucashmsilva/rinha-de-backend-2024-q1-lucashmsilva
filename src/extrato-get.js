@@ -1,34 +1,44 @@
+const limites = [100000, 80000, 1000000, 10000000, 500000];
+
 module.exports = {
   run: async (sql, { clientId }) => {
     if (!Number.isInteger(clientId)) {
       throw new Error('invalid_client_id');
     }
 
-    const clientQuery = sql`
-      SELECT c.limite, s.valor AS total, NOW() AS data_extrato
-      FROM clientes c
-      LEFT JOIN transacoes t ON t.cliente_id=c.id
-      JOIN saldos s ON s.cliente_id=c.id
-      WHERE c.id=${clientId};
-    `;
-
-    const transactionsQuery = sql`
-      SELECT t.valor, t.tipo, t.descricao, t.realizada_em
+    const transactions = await sql`
+      SELECT t.valor, t.saldo_atual, t.tipo, t.descricao, t.realizada_em
       FROM transacoes t
-      WHERE t.cliente_id=${clientId}
+      WHERE t.cliente_id=${clientId} AND t.valor >= 0
       ORDER BY t.id DESC
       LIMIT 10;
     `;
 
-    const [[client], trasactions] = await Promise.all([clientQuery, transactionsQuery]);
-
-    if (!client) {
-      throw new Error('client_not_found');
+    if (!transactions?.length) {
+      return {
+        saldo: {
+          total: 0,
+          data_extrato: new Date(),
+          limite: limites[clientId - 1],
+        },
+        ultimas_transacoes: []
+      }
     }
 
     return {
-      saldo: client,
-      ultimas_transacoes: trasactions
+      saldo: {
+        total: transactions[0].saldo_atual,
+        data_extrato: new Date(),
+        limite: limites[clientId - 1],
+      },
+      ultimas_transacoes: transactions.map((transaction) => {
+        return {
+          valor: transaction.valor,
+          tipo: transaction.tipo,
+          descricao: transaction.descricao,
+          realizada_em: transaction.realizada_em
+        }
+      })
     };
   }
 };

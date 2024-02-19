@@ -2,7 +2,7 @@ const { createServer } = require('node:http');
 const postgres = require('postgres');
 
 const getExtrato = require('./extrato-get');
-const createTransacao = require('./trasacoes-create');
+const createTransacao = require('./transacoes-create');
 
 let sql;
 async function setupDbConnection() {
