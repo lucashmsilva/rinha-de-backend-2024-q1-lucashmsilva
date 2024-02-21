@@ -10,13 +10,21 @@ module.exports = {
       return [404, null];
     }
 
-    const transactions = await sql`
-      SELECT t.valor, t.saldo_atual, t.tipo, t.descricao, t.realizada_em
+    const transactionsQuery = sql`
+      SELECT t.valor, t.tipo, t.descricao, t.realizada_em
       FROM transacoes t
       WHERE t.cliente_id=${clientId} AND t.valor >= 0
       ORDER BY t.id DESC
       LIMIT 10;
     `;
+
+    const balanceQuery = sql`
+      SELECT s.valor AS total
+      FROM slados s
+      WHERE c.id=${clientId};
+    `;
+
+    const [transactions, [balance]] = await Promise.all([transactionsQuery, balanceQuery]);
 
     if (!transactions?.length) {
       return [200, {
@@ -31,18 +39,11 @@ module.exports = {
 
     return [200, {
       saldo: {
-        total: transactions[0].saldo_atual,
+        total: balance.total,
         data_extrato: new Date(),
         limite: limites[clientId - 1],
       },
-      ultimas_transacoes: transactions.map((transaction) => {
-        return {
-          valor: transaction.valor,
-          tipo: transaction.tipo,
-          descricao: transaction.descricao,
-          realizada_em: transaction.realizada_em
-        }
-      })
+      ultimas_transacoes: transactions
     }];
   }
 };

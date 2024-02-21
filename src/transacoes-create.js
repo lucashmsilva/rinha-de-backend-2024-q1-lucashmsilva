@@ -22,14 +22,18 @@ module.exports = {
       return [404, null];
     }
 
-    const [response] = await sql`
-      INSERT INTO transacoes
-        (cliente_id, valor, tipo, descricao, realizada_em, saldo_atual)
-        SELECT 1, ${valor}, ${tipo}, ${descricao}, NOW(), t.saldo_atual-(CASE WHEN ${tipo}='c' THEN ${valor}*-1 ELSE ${valor} END)
-        FROM transacoes t
-        WHERE t.id=(SELECT MAX(id) FROM transacoes WHERE cliente_id=${clientId})
-        AND (t.saldo_atual-(CASE WHEN ${tipo}='c' THEN ${valor}*-1 ELSE ${valor} END)) >= (${limites[clientId - 1]}*-1)
-        RETURNING saldo_atual;`;
+    const response = await sql`
+      WITH inserttransaction AS (
+        INSERT INTO transacoes (cliente_id, valor, tipo, descricao, realizada_em)
+        SELECT ${clientId}, ${valor}, ${tipo}, ${descricao}, ${new Date().toISOString()} FROM saldos s
+        WHERE s.cliente_id=${clientId} AND valor-(CASE WHEN ${tipo}='c' THEN ${valor}*-1 ELSE ${valor} END) >= ${limites[clientId - 1]}
+      )
+      UPDATE saldos AS s
+      SET valor=valor-(CASE WHEN ${tipo}='c' THEN ${valor}*-1 ELSE ${valor} END)
+      WHERE s.cliente_id=${clientId}
+      AND valor-(CASE WHEN ${tipo}='c' THEN ${valor}*-1 ELSE ${valor} END) >= ${limites[clientId - 1]}
+      RETURNING valor AS saldo;
+    `;
 
     if (!response) {
       return [422, null];
@@ -37,7 +41,7 @@ module.exports = {
 
     return [200, {
       limite: limites[clientId - 1],
-      saldo: response.saldo_atual
+      saldo: response.saldo
     }];
   }
 };

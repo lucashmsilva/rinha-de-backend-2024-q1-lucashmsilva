@@ -4,6 +4,6 @@ WORKDIR /api
 
 COPY . .
 
-#RUN npm install
+RUN npm install
 
 CMD if [ "$WATCH" == "1" ]; then npm run start-dev; else npm start; fi
