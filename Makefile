@@ -1,4 +1,4 @@
-.PHONY: build up down restart logs test watch
+.PHONY: build up down restart logs test watch reset_env
 
 build:
 	docker-compose build
@@ -19,3 +19,6 @@ test:
 
 watch:
 	WATCH=1 docker-compose up -d
+
+reset_env:
+	make down && docker image prune -f && docker volume prune -f && make build && make up
