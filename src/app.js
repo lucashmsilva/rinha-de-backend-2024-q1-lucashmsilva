@@ -24,7 +24,7 @@ async function setupDbConnection() {
 
   const poolWarmup = [];
   for (let i = 0; i < dbInitialPoolSize; i++) {
-    poolWarmup.push(sql`SELECT 1+1`);
+    poolWarmup.push(sql`SELECT 1+1 FROM transacoes`);
   }
   await Promise.all([poolWarmup]);
 }
