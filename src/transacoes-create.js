@@ -28,7 +28,7 @@ module.exports = {
       ),
       inserttransaction AS (
         INSERT INTO transacoes (cliente_id, valor, tipo, descricao, realizada_em)
-        SELECT ${clientId}, ${valor}, ${tipo}, ${descricao}, ${new Date().toISOString()} FROM saldos s
+        SELECT ${clientId}, ${valor}, ${tipo}, ${descricao}, NOW() FROM saldos s
         WHERE s.cliente_id=${clientId} AND valor-(SELECT l.t_value FROM limitquery l) >= ${limites[clientId-1]*-1}
       )
       UPDATE saldos AS s

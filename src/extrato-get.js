@@ -16,7 +16,7 @@ module.exports = {
       WHERE s.id=${clientId};
     `;
 
-    const transactionsQuery = await sql`
+    const transactionsQuery = sql`
       SELECT t.valor, t.tipo, t.descricao, t.realizada_em
       FROM transacoes t
       WHERE t.cliente_id=${clientId}
