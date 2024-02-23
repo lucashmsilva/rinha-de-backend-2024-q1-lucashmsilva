@@ -15,3 +15,4 @@
 - Tirar express body parser? ✅
 - readme
 - organizar o código
+- usar index na tabela de transacoes ✅

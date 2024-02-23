@@ -9,9 +9,12 @@
 ## Tecnologias
 
 - Node.js
-- nginx
+- Nginx
 - Postgres
 
-## Métricas atuais
+## Repo
+[Aqui](https://github.com/lucashmsilva/rinha-de-backend-2024-q1)
 
-TODO: Percentis de tempo, quantidade de KOs etc.
+## Criadores
+https://github.com/lucashmsilva \
+https://github.com/bermr
