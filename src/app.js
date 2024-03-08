@@ -2,10 +2,11 @@ const { createServer } = require('node:http');
 const postgres = require('postgres');
 
 const getExtrato = require('./extrato-get');
-const createTransacao = require('./trasacoes-create');
+const createTransacao = require('./transacoes-create');
 
 let sql;
 async function setupDbConnection() {
+  const dbHost = process.env.DB_HOSTNAME;
   const dbUser = process.env.DB_USER;
   const dbPassword = process.env.DB_PASSWORD;
   const dbName = process.env.DB_NAME;
@@ -13,7 +14,7 @@ async function setupDbConnection() {
   const dbInitialPoolSize = process.env.DB_INITIAL_POOL_SIZE;
 
   sql = postgres({
-    host: 'db',
+    host: dbHost,
     port: 5432,
     database: dbName,
     username: dbUser,
@@ -23,7 +24,7 @@ async function setupDbConnection() {
 
   const poolWarmup = [];
   for (let i = 0; i < dbInitialPoolSize; i++) {
-    poolWarmup.push(sql`SELECT 1+1`);
+    poolWarmup.push(sql`SELECT 1+1 FROM transacoes`);
   }
   await Promise.all([poolWarmup]);
 }
@@ -40,37 +41,19 @@ async function handleRequest(req, res) {
   }
 
   if (method === 'POST' && pathname === 'transacoes') {
-    try {
-      let body = '';
-      for await (const chunk of req) body += chunk;
+    let body = '';
+    for await (const chunk of req) body += chunk;
 
-      const { valor, tipo, descricao } = JSON.parse(body);
-      const response = await createTransacao.run(sql, { clientId, valor: +valor, tipo, descricao });
-      return res.writeHead(200, { 'Content-type': 'application/json' }).end(JSON.stringify(response))
-    } catch (err) {
-      if (err.message === 'client_not_found') {
-        return res.writeHead(404).end();
-      }
+    const { valor, tipo, descricao } = JSON.parse(body);
+    const [statusCode, payload] = await createTransacao.run(sql, { clientId, valor: +valor, tipo, descricao });
 
-      if (err.message === 'insufficient_limit') {
-        return res.writeHead(422).end();
-      }
-
-      return res.writeHead(422).end();
-    }
+    return res.writeHead(statusCode, { 'Content-type': 'application/json' }).end(payload ? JSON.stringify(payload) : null);
   }
 
   if (method === 'GET' && pathname === 'extrato') {
-    try {
-      const response = await getExtrato.run(sql, { clientId });
-      return res.writeHead(200, { 'Content-type': 'application/json' }).end(JSON.stringify(response))
-    } catch (err) {
-      if (err.message === 'client_not_found') {
-        return res.writeHead(404).end();
-      }
+    const [statusCode, payload] = await getExtrato.run(sql, { clientId });
 
-      return res.writeHead(500).end();
-    }
+    return res.writeHead(statusCode, { 'Content-type': 'application/json' }).end(payload ? JSON.stringify(payload) : null);
   }
 
   return res.writeHead(404).end();

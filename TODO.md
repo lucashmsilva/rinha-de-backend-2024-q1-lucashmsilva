@@ -13,5 +13,6 @@
 - Node clusters
 - Remover body (retornar head) ✅
 - Tirar express body parser? ✅
-- readme
+- readme ✅
 - organizar o código
+- usar index na tabela de transacoes ✅

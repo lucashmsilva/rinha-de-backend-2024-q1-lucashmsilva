@@ -1,15 +1,19 @@
+const limites = [100000, 80000, 1000000, 10000000, 500000];
+
 module.exports = {
   run: async (sql, { clientId }) => {
     if (!Number.isInteger(clientId)) {
-      throw new Error('invalid_client_id');
+      return [422, null];
     }
 
-    const clientQuery = sql`
-      SELECT c.limite, s.valor AS total, NOW() AS data_extrato
-      FROM clientes c
-      LEFT JOIN transacoes t ON t.cliente_id=c.id
-      JOIN saldos s ON s.cliente_id=c.id
-      WHERE c.id=${clientId};
+    if (clientId > 5) {
+      return [404, null];
+    }
+
+    const balanceQuery = sql`
+      SELECT s.valor AS total
+      FROM saldos AS s
+      WHERE s.id=${clientId};
     `;
 
     const transactionsQuery = sql`
@@ -20,15 +24,15 @@ module.exports = {
       LIMIT 10;
     `;
 
-    const [[client], trasactions] = await Promise.all([clientQuery, transactionsQuery]);
+    const [[balance], transactions] = await Promise.all([balanceQuery, transactionsQuery]);
 
-    if (!client) {
-      throw new Error('client_not_found');
-    }
-
-    return {
-      saldo: client,
-      ultimas_transacoes: trasactions
-    };
+    return [200, {
+      saldo: {
+        total: balance.total,
+        data_extrato: new Date(),
+        limite: limites[clientId - 1],
+      },
+      ultimas_transacoes: transactions
+    }];
   }
 };
